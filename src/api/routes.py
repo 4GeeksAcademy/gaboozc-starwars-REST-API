@@ -1,17 +1,17 @@
-from flask import Flask, jsonify, request
+from flask import Blueprint, jsonify, request
 from flask_cors import CORS
-from models import db, People, Planets, Users, Favorites
+from api.models import db, People, Planets, Users, Favorites
 
-app = Flask(__name__)
-CORS(app)
+api = Blueprint("api", __name__)
+CORS(api)
 
 # People Endpoints
-@app.route('/people', methods=['GET'])
+@api.route('/people', methods=['GET'])
 def get_people():
     people = People.query.all()
     return jsonify([person.serialize() for person in people])
 
-@app.route('/people/<int:people_id>', methods=['GET'])
+@api.route('/people/<int:people_id>', methods=['GET'])
 def get_person(people_id):
     person = People.query.get(people_id)
     if person is None:
@@ -19,12 +19,12 @@ def get_person(people_id):
     return jsonify(person.serialize())
 
 # Planets Endpoints
-@app.route('/planets', methods=['GET'])
+@api.route('/planets', methods=['GET'])
 def get_planets():
     planets = Planets.query.all()
     return jsonify([planet.serialize() for planet in planets])
 
-@app.route('/planets/<int:planet_id>', methods=['GET'])
+@api.route('/planets/<int:planet_id>', methods=['GET'])
 def get_planet(planet_id):
     planet = Planets.query.get(planet_id)
     if planet is None:
@@ -32,12 +32,12 @@ def get_planet(planet_id):
     return jsonify(planet.serialize())
 
 # Users Endpoints
-@app.route('/users', methods=['GET'])
+@api.route('/users', methods=['GET'])
 def get_users():
     users = Users.query.all()
     return jsonify([user.serialize() for user in users])
 
-@app.route('/users/favorites', methods=['GET'])
+@api.route('/users/favorites', methods=['GET'])
 def get_user_favorites():
     user_id = request.args.get('user_id')
     if not user_id:
@@ -47,7 +47,7 @@ def get_user_favorites():
     return jsonify([favorite.serialize() for favorite in favorites])
 
 # Favorites Endpoints
-@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
+@api.route('/favorite/planet/<int:planet_id>', methods=['POST'])
 def add_favorite_planet(planet_id):
     user_id = request.json.get('user_id')
     if not user_id:
@@ -66,7 +66,7 @@ def add_favorite_planet(planet_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+@api.route('/favorite/people/<int:people_id>', methods=['POST'])
 def add_favorite_people(people_id):
     user_id = request.json.get('user_id')
     if not user_id:
@@ -85,7 +85,7 @@ def add_favorite_people(people_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+@api.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
 def delete_favorite_planet(planet_id):
     user_id = request.json.get('user_id')
     if not user_id:
@@ -103,7 +103,7 @@ def delete_favorite_planet(planet_id):
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
 
-@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+@api.route('/favorite/people/<int:people_id>', methods=['DELETE'])
 def delete_favorite_people(people_id):
     user_id = request.json.get('user_id')
     if not user_id:
